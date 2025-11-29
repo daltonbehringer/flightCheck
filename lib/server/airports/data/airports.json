@@ -1,0 +1,110 @@
+[
+  {
+    "id": "sfo",
+    "iata": "SFO",
+    "name": "San Francisco International Airport",
+    "city": "San Francisco",
+    "country": "USA",
+    "lat": 37.6213,
+    "lon": -122.379
+  },
+  {
+    "id": "oak",
+    "iata": "OAK",
+    "name": "Oakland International Airport",
+    "city": "Oakland",
+    "country": "USA",
+    "lat": 37.7126,
+    "lon": -122.2197
+  },
+  {
+    "id": "sjc",
+    "iata": "SJC",
+    "name": "San Jose International Airport",
+    "city": "San Jose",
+    "country": "USA",
+    "lat": 37.3639,
+    "lon": -121.9289
+  },
+  {
+    "id": "smf",
+    "iata": "SMF",
+    "name": "Sacramento International Airport",
+    "city": "Sacramento",
+    "country": "USA",
+    "lat": 38.6954,
+    "lon": -121.5908
+  },
+  {
+    "id": "lax",
+    "iata": "LAX",
+    "name": "Los Angeles International Airport",
+    "city": "Los Angeles",
+    "country": "USA",
+    "lat": 33.9416,
+    "lon": -118.4085
+  },
+  {
+    "id": "jfk",
+    "iata": "JFK",
+    "name": "John F. Kennedy International Airport",
+    "city": "New York",
+    "country": "USA",
+    "lat": 40.6413,
+    "lon": -73.7781
+  },
+  {
+    "id": "ewr",
+    "iata": "EWR",
+    "name": "Newark Liberty International Airport",
+    "city": "Newark",
+    "country": "USA",
+    "lat": 40.6895,
+    "lon": -74.1745
+  },
+  {
+    "id": "bos",
+    "iata": "BOS",
+    "name": "Logan International Airport",
+    "city": "Boston",
+    "country": "USA",
+    "lat": 42.3656,
+    "lon": -71.0096
+  },
+  {
+    "id": "lhr",
+    "iata": "LHR",
+    "name": "London Heathrow Airport",
+    "city": "London",
+    "country": "UK",
+    "lat": 51.47,
+    "lon": -0.4543
+  },
+  {
+    "id": "lgw",
+    "iata": "LGW",
+    "name": "London Gatwick Airport",
+    "city": "London",
+    "country": "UK",
+    "lat": 51.1537,
+    "lon": -0.1821
+  },
+  {
+    "id": "cdg",
+    "iata": "CDG",
+    "name": "Charles de Gaulle Airport",
+    "city": "Paris",
+    "country": "France",
+    "lat": 49.0097,
+    "lon": 2.5479
+  },
+  {
+    "id": "ams",
+    "iata": "AMS",
+    "name": "Amsterdam Schiphol",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "lat": 52.3105,
+    "lon": 4.7683
+  }
+]
