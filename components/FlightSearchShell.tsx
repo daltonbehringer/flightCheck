@@ -11,8 +11,8 @@ type RequestState = 'idle' | 'loading' | 'success' | 'error';
 const formatInputDate = (date: Date) => date.toISOString().split('T')[0];
 
 const defaultFormValues: FlightSearchFormValues = {
-  originInput: 'San Francisco',
-  destinationInput: 'London',
+  originInput: 'SFO',
+  destinationInput: 'LHR',
   tripType: 'roundtrip',
   departureDate: formatInputDate(new Date(Date.now() + 1000 * 60 * 60 * 24 * 14)),
   returnDate: formatInputDate(new Date(Date.now() + 1000 * 60 * 60 * 24 * 21)),

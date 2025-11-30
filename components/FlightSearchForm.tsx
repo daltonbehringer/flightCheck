@@ -102,7 +102,7 @@ export default function FlightSearchForm({ defaultValues, onSubmit, loading }: F
             name="origin"
             value={form.originInput}
             onChange={(e) => setForm((prev) => ({ ...prev, originInput: e.target.value }))}
-            placeholder="San Francisco or SFO"
+            placeholder="SFO"
             className="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 shadow-inner focus:border-accent focus:ring-2 focus:ring-accent/30"
           />
         </label>
@@ -114,7 +114,7 @@ export default function FlightSearchForm({ defaultValues, onSubmit, loading }: F
             name="destination"
             value={form.destinationInput}
             onChange={(e) => setForm((prev) => ({ ...prev, destinationInput: e.target.value }))}
-            placeholder="London or LHR"
+            placeholder="LHR"
             className="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 shadow-inner focus:border-accent focus:ring-2 focus:ring-accent/30"
           />
         </label>

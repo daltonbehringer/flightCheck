@@ -65,7 +65,10 @@ describe('DuffelClient', () => {
   });
 
   it('throws when API key is missing', () => {
+    const originalKey = process.env.DUFFEL_API_KEY;
+    delete process.env.DUFFEL_API_KEY;
     expect(() => new DuffelClient({ apiKey: undefined })).toThrow('DUFFEL_API_KEY');
+    process.env.DUFFEL_API_KEY = originalKey;
   });
 
   it('throws when Duffel responds with an error', async () => {

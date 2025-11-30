@@ -5,12 +5,12 @@ import type { DuffelOfferResponse, DuffelSegmentResponse } from '@/lib/types/duf
 import type { FlightSearchProvider } from './flightSearchProvider';
 
 const DEFAULT_BASE_URL = process.env.DUFFEL_API_BASE_URL ?? 'https://api.duffel.com';
-const DEFAULT_API_VERSION = process.env.DUFFEL_API_VERSION ?? 'v1';
+const DEFAULT_API_VERSION = process.env.DUFFEL_API_VERSION ?? 'v2';
 
 type OfferRequestPayload = {
   data: {
     slices: { origin: string; destination: string; departure_date: string }[];
-    passengers: { type: 'adult'; id: string }[];
+    passengers: { type: 'adult' }[];
     cabin_class: 'economy';
   };
 };
@@ -86,11 +86,12 @@ export class DuffelFlightSearchProvider implements FlightSearchProvider {
   ): Promise<DuffelOfferResponse[]> {
     const payload = this.buildOfferRequestPayload(origin, destination, request);
 
-    const response = await fetch(`${this.baseUrl}/air/offer_requests?return_offers=true`, {
+    const response = await fetch(`${this.baseUrl}/air/offer_requests`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        'Accept-Encoding': 'gzip',
         Authorization: `Bearer ${this.apiKey}`,
         'Duffel-Version': this.apiVersion
       },
@@ -99,6 +100,18 @@ export class DuffelFlightSearchProvider implements FlightSearchProvider {
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => response.statusText);
+      // Highlight unsupported version errors so operators know to bump DUFFEL_API_VERSION.
+      try {
+        const parsed = JSON.parse(errorText);
+        const unsupported = parsed?.errors?.find?.((err: { code?: string }) => err.code === 'unsupported_version');
+        if (unsupported) {
+          throw new Error(
+            `Duffel API version "${this.apiVersion}" is unsupported. Set DUFFEL_API_VERSION=v2 (or a supported value) and retry.`
+          );
+        }
+      } catch {
+        // fall through to generic error
+      }
       throw new Error(`Duffel API responded with ${response.status}: ${errorText}`);
     }
 
@@ -136,7 +149,7 @@ export class DuffelFlightSearchProvider implements FlightSearchProvider {
     return {
       data: {
         slices,
-        passengers: [{ type: 'adult', id: 'passenger_1' }],
+        passengers: [{ type: 'adult' }],
         cabin_class: 'economy'
       }
     };

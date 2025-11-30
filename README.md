@@ -16,9 +16,14 @@ A modern flight search experience built with Next.js, TypeScript, and Tailwind C
    ```bash
    npm install
    ```
-3. **Create environment file**
-   ```bash
-   cp .env.example .env
+3. **Create environment file**  
+   Add a root `.env` file with the required variables, for example:
+   ```
+   FLIGHT_SEARCH_PROVIDER=duffel
+   DUFFEL_API_KEY=YOUR_DUFFEL_API_KEY
+   DUFFEL_API_BASE_URL=https://api.duffel.com
+   DUFFEL_API_VERSION=v2
+   DEFAULT_AIRPORT_RADIUS_KM=150
    ```
 4. **Run the dev server**
    ```bash
@@ -30,15 +35,19 @@ A modern flight search experience built with Next.js, TypeScript, and Tailwind C
 - `FLIGHT_SEARCH_PROVIDER`: `duffel` (example default for live calls) or `mock` to stay local.
 - `DUFFEL_API_KEY`: required when `FLIGHT_SEARCH_PROVIDER=duffel`; set it in your root `.env`.
 - `DUFFEL_API_BASE_URL` (optional): override Duffel base URL (defaults to `https://api.duffel.com`).
-- `DUFFEL_API_VERSION` (optional): Duffel API version header (defaults to `v1`).
+- `DUFFEL_API_VERSION` (optional): Duffel API version header (defaults to `v2`; update if Duffel deprecates it).
 - `DEFAULT_AIRPORT_RADIUS_KM` (optional): fallback distance for nearby airport search (defaults to 150 km).
 
 ## Duffel provider setup
-1. Copy `.env.example` to `.env` if you have not already.
-2. Add your Duffel API key in `.env` as `DUFFEL_API_KEY=your_key_here` (do not commit the real key).
-3. Switch the provider by setting `FLIGHT_SEARCH_PROVIDER=duffel` in `.env`.
-4. Optional: override `DUFFEL_API_BASE_URL` or `DUFFEL_API_VERSION` if you are pointing at a non-default Duffel environment.
-5. Restart `npm run dev` so the API route picks up the new environment variables.
+1. Ensure your root `.env` file includes:
+   ```
+   FLIGHT_SEARCH_PROVIDER=duffel
+   DUFFEL_API_KEY=your_key_here
+   DUFFEL_API_BASE_URL=https://api.duffel.com
+   DUFFEL_API_VERSION=v2
+   ```
+2. Do not commit real keys; keep production keys in a separate, untracked `.env.local` if needed.
+3. Restart `npm run dev` so the API route picks up the new environment variables.
 
 ## Project structure
 ```

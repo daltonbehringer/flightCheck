@@ -8,12 +8,12 @@ import {
 } from '@/lib/types/duffel';
 
 const DEFAULT_BASE_URL = process.env.DUFFEL_API_BASE_URL ?? 'https://api.duffel.com';
-const DUFFEL_API_VERSION = process.env.DUFFEL_API_VERSION ?? 'v1';
+const DUFFEL_API_VERSION = process.env.DUFFEL_API_VERSION ?? 'v2';
 
 type SearchPayload = {
   data: {
     slices: { origin: string; destination: string; departure_date: string }[];
-    passengers: { type: 'adult'; id: string }[];
+    passengers: { type: 'adult' }[];
     cabin_class: CabinClass;
   };
 };
@@ -50,9 +50,8 @@ const buildSearchPayload = (params: FlightSearchParams): SearchPayload => {
     });
   }
 
-  const passengers = Array.from({ length: params.passengers }, (_, index) => ({
-    type: 'adult' as const,
-    id: `passenger_${index + 1}`
+  const passengers = Array.from({ length: params.passengers }, () => ({
+    type: 'adult' as const
   }));
 
   return {
@@ -121,11 +120,12 @@ export class DuffelClient {
   async searchFlights(params: FlightSearchParams): Promise<FlightOffer[]> {
     const payload = buildSearchPayload(params);
 
-    const response = await fetch(`${this.baseUrl}/air/offer_requests?return_offers=true`, {
+    const response = await fetch(`${this.baseUrl}/air/offer_requests`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        'Accept-Encoding': 'gzip',
         Authorization: `Bearer ${this.apiKey}`,
         'Duffel-Version': this.apiVersion
       },
@@ -134,6 +134,17 @@ export class DuffelClient {
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => response.statusText);
+      try {
+        const parsed = JSON.parse(errorText);
+        const unsupported = parsed?.errors?.find?.((err: { code?: string }) => err.code === 'unsupported_version');
+        if (unsupported) {
+          throw new Error(
+            `Duffel API version "${this.apiVersion}" is unsupported. Set DUFFEL_API_VERSION=v2 (or a supported value) and retry.`
+          );
+        }
+      } catch {
+        // ignore parse issues and fall through
+      }
       throw new Error(`Duffel API responded with ${response.status}: ${errorText}`);
     }
 
