@@ -27,7 +27,7 @@ A modern flight search experience built with Next.js, TypeScript, and Tailwind C
 5. Visit `http://localhost:3000/search` to use the UI.
 
 ## Environment variables
-- `FLIGHT_SEARCH_PROVIDER`: `mock` (default) or `duffel` to call the live Duffel API.
+- `FLIGHT_SEARCH_PROVIDER`: `duffel` (example default for live calls) or `mock` to stay local.
 - `DUFFEL_API_KEY`: required when `FLIGHT_SEARCH_PROVIDER=duffel`; set it in your root `.env`.
 - `DUFFEL_API_BASE_URL` (optional): override Duffel base URL (defaults to `https://api.duffel.com`).
 - `DUFFEL_API_VERSION` (optional): Duffel API version header (defaults to `v1`).
