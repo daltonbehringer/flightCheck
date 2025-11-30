@@ -156,38 +156,6 @@ export class MockFlightSearchProvider implements FlightSearchProvider {
       segmentDeparture = addMinutes(leg.arrivalTimeLocal, 60); // 1 hour layover padding
     });
 
-    const returnAirports =
-      tripType === 'roundtrip' && returnDate
-        ? [destinationAirport.iata, ...stops.slice().reverse(), departureAirport.iata]
-        : null;
-
-    if (returnAirports) {
-      let returnDeparture = `${returnDate}T12:00:00.000Z`;
-
-      returnAirports.forEach((code, index) => {
-        if (index === returnAirports.length - 1) return;
-        const origin = airportLookup[returnAirports[index].toUpperCase()];
-        const destination = airportLookup[returnAirports[index + 1].toUpperCase()];
-        if (!origin || !destination) return;
-
-        const legDistance = haversineDistanceKm(origin.lat, origin.lon, destination.lat, destination.lon);
-        const durationMinutes = minutesFromDistance(legDistance);
-
-        const leg: FlightLeg = {
-          originAirport: origin,
-          destinationAirport: destination,
-          departureTimeLocal: returnDeparture,
-          arrivalTimeLocal: addMinutes(returnDeparture, durationMinutes),
-          airlineCode: airline,
-          flightNumber: `${airline}${Math.floor(Math.random() * 900) + 100}`,
-          durationMinutes
-        };
-
-        legs.push(leg);
-        returnDeparture = addMinutes(leg.arrivalTimeLocal, 60);
-      });
-    }
-
     const firstDeparture = legs[0]?.departureTimeLocal;
     const lastArrival = legs[legs.length - 1]?.arrivalTimeLocal;
     const totalDurationMinutes =
@@ -200,12 +168,10 @@ export class MockFlightSearchProvider implements FlightSearchProvider {
           )
         : 0;
 
-    const returnStops = returnAirports ? Math.max(returnAirports.length - 2, 0) : 0;
     const outboundStops = Math.max(outboundAirports.length - 2, 0);
-    const totalStops = outboundStops + returnStops;
+    const totalStops = outboundStops;
 
-    const totalPrice =
-      basePriceForDistance(distanceKm, priceMultiplier) * (tripType === 'roundtrip' ? 1.6 : 1);
+    const totalPrice = basePriceForDistance(distanceKm, priceMultiplier);
 
     const bookingUrl = `https://example.com/book/${departureAirport.iata}-${destinationAirport.iata}`;
 

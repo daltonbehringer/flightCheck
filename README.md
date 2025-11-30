@@ -71,6 +71,7 @@ lib/
 
 ## Architecture notes
 - UI posts to `/api/flight-search`, which validates the request with zod, resolves nearby origin airports, runs the `FlightSearchProvider`, ranks results by price then duration, and returns a unified response.
+- Searches are evaluated one-way at a time; only outbound legs are returned even if a return date is provided. (Handle returns with a separate search.)
 - `MockFlightSearchProvider` lives behind the `FlightSearchProvider` interface so a real API client can be dropped in later.
 - Airport resolution is driven by a static dataset and Haversine distance; preferred airport lists override radius searches.
 - Components are intentionally lean so you can swap layouts or experiment with new UX flows quickly.

@@ -138,14 +138,6 @@ export class DuffelFlightSearchProvider implements FlightSearchProvider {
       }
     ];
 
-    if (request.tripType === 'roundtrip' && request.returnDate) {
-      slices.push({
-        origin: destination,
-        destination: origin,
-        departure_date: request.returnDate
-      });
-    }
-
     return {
       data: {
         slices,

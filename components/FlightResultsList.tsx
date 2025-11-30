@@ -27,8 +27,15 @@ const formatDateTime = (value: string) => {
     hour: 'numeric',
     minute: '2-digit',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   }).format(date);
+};
+
+const minutesBetween = (start: string, end: string) => {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const diffMs = endDate.getTime() - startDate.getTime();
+  return Math.max(Math.round(diffMs / (1000 * 60)), 0);
 };
 
 const formatDuration = (minutes: number) => {
@@ -172,19 +179,28 @@ export default function FlightResultsList({
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-semibold text-ink">{leg.originAirport.name}</div>
-                        <div className="text-xs text-slate-500">{formatDateTime(leg.departureTimeLocal)}</div>
+                        <div className="text-xs text-slate-500">
+                          {formatDateTime(leg.departureTimeLocal)}
+                        </div>
                       </div>
                       <div className="text-xs uppercase tracking-[0.15em] text-slate-400">
                         {formatDuration(leg.durationMinutes)}
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-ink">{leg.destinationAirport.name}</div>
-                        <div className="text-xs text-slate-500">{formatDateTime(leg.arrivalTimeLocal)}</div>
+                        <div className="text-xs text-slate-500">
+                          {formatDateTime(leg.arrivalTimeLocal)}
+                        </div>
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                       <span className="rounded-full bg-white px-2 py-1">{leg.airlineCode}</span>
                       <span className="rounded-full bg-white px-2 py-1">Flight {leg.flightNumber}</span>
+                      {legIndex < itinerary.legs.length - 1 && (
+                        <span className="rounded-full bg-white px-2 py-1">
+                          Layover: {formatDuration(minutesBetween(leg.arrivalTimeLocal, itinerary.legs[legIndex + 1].departureTimeLocal))}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
