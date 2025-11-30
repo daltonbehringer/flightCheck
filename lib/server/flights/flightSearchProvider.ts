@@ -148,8 +148,18 @@ export class MockFlightSearchProvider implements FlightSearchProvider {
         departureTimeLocal: segmentDeparture,
         arrivalTimeLocal: addMinutes(segmentDeparture, durationMinutes),
         airlineCode: airline,
+        airlineName: `Mock ${airline}`,
+        operatingAirlineCode: airline,
+        operatingAirlineName: `Mock ${airline}`,
         flightNumber: `${airline}${Math.floor(Math.random() * 900) + 100}`,
-        durationMinutes
+        durationMinutes,
+        aircraftTypeCode: 'MCK1',
+        aircraftTypeName: 'Mock Narrowbody',
+        cabinClass: 'economy',
+        fareClass: 'Y',
+        availableSeats: 4,
+        includedCheckedBags: { quantity: 1, weightKg: 23 },
+        includedCabinBags: { quantity: 1, weightKg: 8 }
       };
 
       legs.push(leg);
@@ -192,7 +202,15 @@ export class MockFlightSearchProvider implements FlightSearchProvider {
       departureAirport,
       arrivalAirport: destinationAirport,
       bookingUrl,
-      provider: 'mock'
+      provider: 'mock',
+      fareBrandName: 'Mock Saver',
+      isRefundable: false,
+      isChangeable: true,
+      changePenaltyAmount: 50,
+      refundPenaltyAmount: null,
+      fareRestrictionsSummary: 'Changes allowed with fee, non-refundable',
+      mainMarketingAirlineCode: airline,
+      mainMarketingAirlineName: `Mock ${airline}`
     };
   }
 }

@@ -6,6 +6,7 @@ export interface Airport {
   country: string;
   lat: number;
   lon: number;
+  timezone?: string;
   distanceFromOriginKm?: number;
 }
 
@@ -15,8 +16,18 @@ export interface FlightLeg {
   departureTimeLocal: string;
   arrivalTimeLocal: string;
   airlineCode: string;
+  airlineName?: string;
+  operatingAirlineCode?: string;
+  operatingAirlineName?: string;
   flightNumber: string;
   durationMinutes: number;
+  aircraftTypeCode?: string;
+  aircraftTypeName?: string;
+  cabinClass?: 'economy' | 'premium_economy' | 'business' | 'first' | string;
+  fareClass?: string;
+  availableSeats?: number;
+  includedCheckedBags?: { quantity?: number; weightKg?: number } | null;
+  includedCabinBags?: { quantity?: number; weightKg?: number } | null;
 }
 
 export interface Itinerary {
@@ -30,6 +41,14 @@ export interface Itinerary {
   arrivalAirport: Airport;
   bookingUrl?: string;
   provider?: string;
+  fareBrandName?: string;
+  isRefundable?: boolean;
+  isChangeable?: boolean;
+  changePenaltyAmount?: number | null;
+  refundPenaltyAmount?: number | null;
+  fareRestrictionsSummary?: string;
+  mainMarketingAirlineCode?: string;
+  mainMarketingAirlineName?: string;
 }
 
 export type TripType = 'oneway' | 'roundtrip';

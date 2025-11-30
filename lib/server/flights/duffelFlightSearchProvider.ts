@@ -1,6 +1,6 @@
 import type { Airport, FlightLeg, FlightSearchRequest, Itinerary } from '@/lib/shared/types/flights';
 import { findAirportsByCodes, resolveDestinationAirports, getAirportDataset } from '@/lib/server/airports/airportService';
-import type { DuffelOfferResponse, DuffelSegmentResponse } from '@/lib/types/duffel';
+import type { DuffelOfferResponse, DuffelSegmentResponse, DuffelSegmentPassenger } from '@/lib/types/duffel';
 
 import type { FlightSearchProvider } from './flightSearchProvider';
 
@@ -159,6 +159,7 @@ export class DuffelFlightSearchProvider implements FlightSearchProvider {
     airportLookup: Record<string, Airport>
   ): Itinerary | null {
     const legs: FlightLeg[] = [];
+    const availableSeats = offer.available_seats ?? undefined;
 
     offer.slices.forEach((slice) => {
       slice.segments.forEach((segment) => {
@@ -170,14 +171,43 @@ export class DuffelFlightSearchProvider implements FlightSearchProvider {
           parseISODurationToMinutes(segment.duration) ||
           minutesBetween(segment.departing_at, segment.arriving_at);
 
+        const passengerDetails: DuffelSegmentPassenger | undefined = segment.passengers?.[0] ?? undefined;
+        const baggageAllowance = passengerDetails?.baggage_allowances;
+
         legs.push({
           originAirport,
           destinationAirport,
           departureTimeLocal: segment.departing_at,
           arrivalTimeLocal: segment.arriving_at,
           airlineCode: segment.marketing_carrier?.iata_code || segment.marketing_carrier?.name || 'N/A',
+          airlineName: segment.marketing_carrier?.name || undefined,
+          operatingAirlineCode:
+            segment.operating_carrier?.iata_code || segment.operating_carrier?.name || undefined,
+          operatingAirlineName: segment.operating_carrier?.name || undefined,
           flightNumber: segment.id,
-          durationMinutes
+          durationMinutes,
+          aircraftTypeCode: segment.aircraft?.iata_code || segment.aircraft?.icao_code || undefined,
+          aircraftTypeName: segment.aircraft?.name || segment.aircraft?.manufacturer || undefined,
+          cabinClass:
+            segment.cabin_class || passengerDetails?.cabin_class || passengerDetails?.cabin_class_marketing_name || undefined,
+          fareClass: segment.fare_basis_code || passengerDetails?.fare_basis_code || undefined,
+          availableSeats: availableSeats ?? undefined,
+          includedCheckedBags: baggageAllowance?.checked
+            ? {
+                quantity:
+                  baggageAllowance.checked.quantity === null
+                    ? undefined
+                    : baggageAllowance.checked.quantity ?? undefined,
+                weightKg: baggageAllowance.checked.weight_kg ?? undefined
+              }
+            : null,
+          includedCabinBags: baggageAllowance?.cabin
+            ? {
+                quantity:
+                  baggageAllowance.cabin.quantity === null ? undefined : baggageAllowance.cabin.quantity ?? undefined,
+                weightKg: baggageAllowance.cabin.weight_kg ?? undefined
+              }
+            : null
         });
       });
     });
@@ -200,6 +230,29 @@ export class DuffelFlightSearchProvider implements FlightSearchProvider {
 
     const totalPrice = Number(offer.total_amount);
 
+    const mainMarketing = legs[0];
+    const fareBrandName =
+      offer.conditions?.fare_brand_name ??
+      legs[0]?.cabinClass?.toString() ??
+      legs[0]?.airlineCode ??
+      undefined;
+
+    const isChangeable = offer.conditions?.change_before_departure?.allowed ?? undefined;
+    const isRefundable = offer.conditions?.refund_before_departure?.allowed ?? undefined;
+    const changePenaltyAmount = offer.conditions?.change_before_departure?.penalty_amount
+      ? Number(offer.conditions.change_before_departure.penalty_amount)
+      : null;
+    const refundPenaltyAmount = offer.conditions?.refund_before_departure?.penalty_amount
+      ? Number(offer.conditions.refund_before_departure.penalty_amount)
+      : null;
+
+    const fareRestrictionsSummary = this.summarizeRestrictions({
+      isChangeable,
+      isRefundable,
+      changePenaltyAmount,
+      refundPenaltyAmount
+    });
+
     return {
       id: `duffel-${offer.id}`,
       legs,
@@ -209,8 +262,56 @@ export class DuffelFlightSearchProvider implements FlightSearchProvider {
       numberOfStops,
       departureAirport: legs[0].originAirport,
       arrivalAirport: legs[legs.length - 1].destinationAirport,
-      provider: 'duffel'
+      provider: 'duffel',
+      fareBrandName,
+      isRefundable,
+      isChangeable,
+      changePenaltyAmount,
+      refundPenaltyAmount,
+      fareRestrictionsSummary,
+      mainMarketingAirlineCode: mainMarketing?.airlineCode,
+      mainMarketingAirlineName: mainMarketing?.airlineName
     };
+  }
+
+  private summarizeRestrictions({
+    isChangeable,
+    isRefundable,
+    changePenaltyAmount,
+    refundPenaltyAmount
+  }: {
+    isChangeable?: boolean;
+    isRefundable?: boolean;
+    changePenaltyAmount?: number | null;
+    refundPenaltyAmount?: number | null;
+  }): string | undefined {
+    const parts: string[] = [];
+    if (isRefundable !== undefined) {
+      if (isRefundable) {
+        parts.push(
+          refundPenaltyAmount && refundPenaltyAmount > 0
+            ? `Refundable (fee ${refundPenaltyAmount})`
+            : 'Refundable'
+        );
+      } else {
+        parts.push('Non-refundable');
+      }
+    }
+
+    if (isChangeable !== undefined) {
+      if (isChangeable) {
+        parts.push(
+          changePenaltyAmount && changePenaltyAmount > 0
+            ? `Changes allowed (fee ${changePenaltyAmount})`
+            : 'Changes allowed'
+        );
+      } else {
+        parts.push('No changes');
+      }
+    }
+
+    if (!parts.length) return undefined;
+    return parts.join(', ');
   }
 
   private lookupAirport(
