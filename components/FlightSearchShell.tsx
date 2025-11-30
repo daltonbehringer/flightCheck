@@ -5,7 +5,6 @@ import { useMemo, useState } from 'react';
 import FlightResultsList from '@/components/FlightResultsList';
 import FlightSearchForm, { FlightSearchFormValues } from '@/components/FlightSearchForm';
 import type { FlightSearchRequest, FlightSearchResponse } from '@/lib/shared/types/flights';
-import React = require('react');
 
 type RequestState = 'idle' | 'loading' | 'success' | 'error';
 

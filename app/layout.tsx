@@ -1,7 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Space_Grotesk } from 'next/font/google';
-import React = require('react');
+import type { ReactNode } from 'react';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: 'Modern flight search experience powered by the Duffel API.'
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={spaceGrotesk.variable}>
       <body className="font-sans antialiased text-slate-900">{children}</body>

@@ -3,7 +3,6 @@
 import { FormEvent, useState } from 'react';
 
 import type { FlightSearchRequest, TripType } from '@/lib/shared/types/flights';
-import React = require('react');
 
 export interface FlightSearchFormValues {
   originInput: string;

@@ -1,6 +1,5 @@
 
 import type { Airport, FlightSearchRequest, Itinerary } from '@/lib/shared/types/flights';
-import React = require('react');
 
 interface FlightResultsListProps {
   itineraries: Itinerary[];
