@@ -1,9 +1,13 @@
 {
-  "extends": "next/tsconfig.json",
+  "extends": "./node_modules/next/tsconfig.json",
   "compilerOptions": {
     "jsx": "react",
     "strict": true,
     "baseUrl": ".",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "paths": {
       "@/*": ["./*"]
     }

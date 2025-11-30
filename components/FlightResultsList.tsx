@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 
 import type { Airport, FlightSearchRequest, Itinerary } from '@/lib/shared/types/flights';
 import React = require('react');
