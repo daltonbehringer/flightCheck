@@ -9,10 +9,10 @@ export default function SearchPage() {
             Cost-first prototype
           </p>
           <h1 className="text-4xl font-semibold text-ink sm:text-5xl">
-            Multi-airport flight search that stays simple.
+            Your multi-airport flight optimizer.
           </h1>
           <p className="mt-4 text-lg text-slate-600 sm:text-xl">
-            Compare flights across nearby airports with a single query - sorted by fare, not just route.
+            Instantly compare all drive-and-fly combinations to find the best path to your destination.
           </p>
         </header>
 
