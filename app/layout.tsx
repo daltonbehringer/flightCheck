@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Space_Grotesk } from 'next/font/google';
+import React = require('react');
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],

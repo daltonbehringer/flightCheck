@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 
 import type { Airport, FlightSearchRequest, Itinerary } from '@/lib/shared/types/flights';
+import React = require('react');
 
 interface FlightResultsListProps {
   itineraries: Itinerary[];
@@ -112,7 +113,7 @@ export default function FlightResultsList({
         </div>
         {lastSearch && (
           <div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-slate-700">
-            {formatAirports(originAirports)} -> {formatAirports(destinationAirports)}
+            {formatAirports(originAirports)} -{'>'} {formatAirports(destinationAirports)}
             {lastSearch.tripType === 'roundtrip' ? ' (round trip)' : ' (one way)'}
           </div>
         )}

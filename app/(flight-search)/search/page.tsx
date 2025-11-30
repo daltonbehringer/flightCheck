@@ -1,4 +1,5 @@
 import FlightSearchShell from '@/components/FlightSearchShell';
+import React = require('react');
 
 export default function SearchPage() {
   return (
