@@ -1,5 +1,203 @@
 [
   {
+    "id": "aus",
+    "iata": "AUS",
+    "name": "Austin–Bergstrom International Airport",
+    "city": "Austin",
+    "country": "USA",
+    "lat": 30.1975,
+    "lon": -97.6664
+  },
+  {
+    "id": "sat",
+    "iata": "SAT",
+    "name": "San Antonio International Airport",
+    "city": "San Antonio",
+    "country": "USA",
+    "lat": 29.5337,
+    "lon": -98.4698
+  },
+  {
+    "id": "grk",
+    "iata": "GRK",
+    "name": "Killeen–Fort Cavazos Regional Airport",
+    "city": "Killeen",
+    "country": "USA",
+    "lat": 31.0672,
+    "lon": -97.8289
+  },
+  {
+    "id": "cvt",
+    "iata": "CNW",
+    "name": "Waco Regional Airport",
+    "city": "Waco",
+    "country": "USA",
+    "lat": 31.6113,
+    "lon": -97.2308
+  },
+  {
+    "id": "drt",
+    "iata": "DRT",
+    "name": "Del Rio International Airport",
+    "city": "Del Rio",
+    "country": "USA",
+    "lat": 29.3742,
+    "lon": -100.9272
+  },
+  {
+    "id": "sgt",
+    "iata": "SJT",
+    "name": "San Angelo Regional Airport (Mathis Field)",
+    "city": "San Angelo",
+    "country": "USA",
+    "lat": 31.3577,
+    "lon": -100.4960
+  },
+  {
+    "id": "dfw",
+    "iata": "DFW",
+    "name": "Dallas/Fort Worth International Airport",
+    "city": "Dallas–Fort Worth",
+    "country": "USA",
+    "lat": 32.8998,
+    "lon": -97.0403
+  },
+  {
+    "id": "dal",
+    "iata": "DAL",
+    "name": "Dallas Love Field",
+    "city": "Dallas",
+    "country": "USA",
+    "lat": 32.8471,
+    "lon": -96.8518
+  },
+  {
+    "id": "act",
+    "iata": "ACT",
+    "name": "Waco Regional Airport",
+    "city": "Waco",
+    "country": "USA",
+    "lat": 31.6113,
+    "lon": -97.2308
+  },
+  {
+    "id": "tyr",
+    "iata": "TYR",
+    "name": "Tyler Pounds Regional Airport",
+    "city": "Tyler",
+    "country": "USA",
+    "lat": 32.3543,
+    "lon": -95.4027
+  },
+  {
+    "id": "sps",
+    "iata": "SPS",
+    "name": "Wichita Falls Regional Airport (Sheppard AFB - Wichita Falls Municipal)",
+    "city": "Wichita Falls",
+    "country": "USA",
+    "lat": 33.9880,
+    "lon": -98.4916
+  },
+  {
+    "id": "jfk",
+    "iata": "JFK",
+    "name": "John F. Kennedy International Airport",
+    "city": "New York",
+    "country": "USA",
+    "lat": 40.641766,
+    "lon": -73.780968
+  },
+  {
+    "id": "lga",
+    "iata": "LGA",
+    "name": "LaGuardia Airport",
+    "city": "New York",
+    "country": "USA",
+    "lat": 40.776863,
+    "lon": -73.874069
+  },
+  {
+    "id": "ewr",
+    "iata": "EWR",
+    "name": "Newark Liberty International Airport",
+    "city": "Newark",
+    "country": "USA",
+    "lat": 40.689531,
+    "lon": -74.174462
+  },
+  {
+    "id": "hpn",
+    "iata": "HPN",
+    "name": "Westchester County Airport",
+    "city": "White Plains",
+    "country": "USA",
+    "lat": 41.067003,
+    "lon": -73.707569
+  },
+  {
+    "id": "isp",
+    "iata": "ISP",
+    "name": "Long Island MacArthur Airport",
+    "city": "Islip / Ronkonkoma",
+    "country": "USA",
+    "lat": 40.796136,
+    "lon": -73.100665
+  },
+  {
+    "id": "swf",
+    "iata": "SWF",
+    "name": "Stewart International Airport",
+    "city": "New Windsor",
+    "country": "USA",
+    "lat": 41.504833,
+    "lon": -74.104194
+  },
+  {
+    "id": "acy",
+    "iata": "ACY",
+    "name": "Atlantic City International Airport",
+    "city": "Atlantic City / Egg Harbor Township",
+    "country": "USA",
+    "lat": 39.4545,
+    "lon": -74.5730
+  },
+  {
+    "id": "ttn",
+    "iata": "TTN",
+    "name": "Trenton–Mercer Airport",
+    "city": "Trenton",
+    "country": "USA",
+    "lat": 40.276699,
+    "lon": -74.813797
+  },
+  {
+    "id": "hvn",
+    "iata": "HVN",
+    "name": "Tweed New Haven Regional Airport",
+    "city": "New Haven",
+    "country": "USA",
+    "lat": 41.270610,
+    "lon": -72.886143
+  },
+  {
+    "id": "mmu",
+    "iata": "MMU",
+    "name": "Morristown Municipal Airport",
+    "city": "Morristown",
+    "country": "USA",
+    "lat": 40.799600,
+    "lon": -74.414200
+  },
+  {
+    "id": "abe",
+    "iata": "ABE",
+    "name": "Lehigh Valley International Airport",
+    "city": "Allentown / Bethlehem / Easton",
+    "country": "USA",
+    "lat": 40.652084,
+    "lon": -75.440806
+  },
+  {
     "id": "sfo",
     "iata": "SFO",
     "name": "San Francisco International Airport",
@@ -43,24 +241,6 @@
     "country": "USA",
     "lat": 33.9416,
     "lon": -118.4085
-  },
-  {
-    "id": "jfk",
-    "iata": "JFK",
-    "name": "John F. Kennedy International Airport",
-    "city": "New York",
-    "country": "USA",
-    "lat": 40.6413,
-    "lon": -73.7781
-  },
-  {
-    "id": "ewr",
-    "iata": "EWR",
-    "name": "Newark Liberty International Airport",
-    "city": "Newark",
-    "country": "USA",
-    "lat": 40.6895,
-    "lon": -74.1745
   },
   {
     "id": "bos",
