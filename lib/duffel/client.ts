@@ -8,7 +8,7 @@ import {
 } from '@/lib/types/duffel';
 
 const DEFAULT_BASE_URL = process.env.DUFFEL_API_BASE_URL ?? 'https://api.duffel.com';
-const DUFFEL_API_VERSION = 'v1';
+const DUFFEL_API_VERSION = process.env.DUFFEL_API_VERSION ?? 'v1';
 
 type SearchPayload = {
   data: {
@@ -102,17 +102,20 @@ const normalizeSlice = (slice: DuffelOfferResponse['slices'][number]): FlightSli
 export class DuffelClient {
   private apiKey: string;
   private baseUrl: string;
+  private apiVersion: string;
 
   constructor({
     apiKey = process.env.DUFFEL_API_KEY,
-    baseUrl = DEFAULT_BASE_URL
-  }: { apiKey?: string; baseUrl?: string } = {}) {
+    baseUrl = DEFAULT_BASE_URL,
+    apiVersion = DUFFEL_API_VERSION
+  }: { apiKey?: string; baseUrl?: string; apiVersion?: string } = {}) {
     if (!apiKey) {
       throw new Error('DUFFEL_API_KEY is not set. Add it to your environment to enable searches.');
     }
 
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
+    this.apiVersion = apiVersion;
   }
 
   async searchFlights(params: FlightSearchParams): Promise<FlightOffer[]> {
@@ -124,7 +127,7 @@ export class DuffelClient {
         'Content-Type': 'application/json',
         Accept: 'application/json',
         Authorization: `Bearer ${this.apiKey}`,
-        'Duffel-Version': DUFFEL_API_VERSION
+        'Duffel-Version': this.apiVersion
       },
       body: JSON.stringify(payload)
     });

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { resolveDepartureAirports, resolveDestinationAirports } from '@/lib/server/airports/airportService';
-import { MockFlightSearchProvider } from '@/lib/server/flights/flightSearchProvider';
+import { getFlightSearchProvider } from '@/lib/server/flights/providerFactory';
 import { rankItineraries } from '@/lib/server/flights/itineraryRanking';
 import type { FlightSearchRequest } from '@/lib/shared/types/flights';
 
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const provider = new MockFlightSearchProvider();
+    const provider = getFlightSearchProvider();
     const itineraries = await provider.searchFlights({
       ...payload,
       departureAirportCodes: originAirports.map((airport) => airport.iata)

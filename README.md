@@ -27,8 +27,18 @@ A modern flight search experience built with Next.js, TypeScript, and Tailwind C
 5. Visit `http://localhost:3000/search` to use the UI.
 
 ## Environment variables
+- `FLIGHT_SEARCH_PROVIDER`: `mock` (default) or `duffel` to call the live Duffel API.
+- `DUFFEL_API_KEY`: required when `FLIGHT_SEARCH_PROVIDER=duffel`; set it in your root `.env`.
+- `DUFFEL_API_BASE_URL` (optional): override Duffel base URL (defaults to `https://api.duffel.com`).
+- `DUFFEL_API_VERSION` (optional): Duffel API version header (defaults to `v1`).
 - `DEFAULT_AIRPORT_RADIUS_KM` (optional): fallback distance for nearby airport search (defaults to 150 km).
-- `DUFFEL_API_KEY` / `DUFFEL_API_BASE_URL` (optional): kept for the Duffel sample route.
+
+## Duffel provider setup
+1. Copy `.env.example` to `.env` if you have not already.
+2. Add your Duffel API key in `.env` as `DUFFEL_API_KEY=your_key_here` (do not commit the real key).
+3. Switch the provider by setting `FLIGHT_SEARCH_PROVIDER=duffel` in `.env`.
+4. Optional: override `DUFFEL_API_BASE_URL` or `DUFFEL_API_VERSION` if you are pointing at a non-default Duffel environment.
+5. Restart `npm run dev` so the API route picks up the new environment variables.
 
 ## Project structure
 ```
@@ -71,6 +81,6 @@ lib/
 - Duffel client mock test (`__tests__/duffelClient.test.ts`) remains for the legacy endpoint.
 
 ## Next steps
-- Swap `MockFlightSearchProvider` for a real provider (Amadeus, Skyscanner, Duffel) behind the same interface.
+- Add more provider options or fallbacks (Amadeus, Skyscanner, etc.) behind the same interface.
 - Add parking/ground costs as additional legs or surcharges without changing the public response shape.
 - Persist search history and add analytics hooks for UX experiments.
