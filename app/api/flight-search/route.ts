@@ -48,6 +48,7 @@ const requestSchema = z
     tripType: z.enum(['oneway', 'roundtrip']),
     departureDate: z.string(),
     returnDate: z.string().optional(),
+    includeNearbyAirports: z.boolean().optional(),
     maxDepartureAirportDistanceKm: z.number().positive().optional(),
     preferredDepartureAirports: z.array(z.string()).optional(),
     maxArrivalAirportDistanceKm: z.number().positive().optional(),

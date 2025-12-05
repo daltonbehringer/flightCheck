@@ -51,6 +51,7 @@ export default function FlightSearchForm({ defaultValues, onSubmit, loading }: F
       tripType: form.tripType,
       departureDate: form.departureDate,
       returnDate: form.tripType === 'roundtrip' ? form.returnDate : undefined,
+      includeNearbyAirports: form.useNearbyAirports,
       maxDepartureAirportDistanceKm: form.useNearbyAirports ? NEARBY_AIRPORT_RADIUS_KM : undefined,
       maxArrivalAirportDistanceKm: form.useNearbyAirports ? NEARBY_AIRPORT_RADIUS_KM : undefined,
       nonStopOnly: form.nonStopOnly

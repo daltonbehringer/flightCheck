@@ -106,20 +106,50 @@ const resolveNearbyAirports = (
   return { candidates, usedRadiusKm: maxDistance };
 };
 
+const resolveExactAirports = (location: FlightSearchLocation): { candidates: Airport[]; usedRadiusKm: number } => {
+  const code = location.airportCode?.trim().toUpperCase();
+  if (code) {
+    const airport = findAirportByCode(code);
+    return { candidates: airport ? [airport] : [], usedRadiusKm: 0 };
+  }
+
+  const cityAirports = findAirportsByCity(location.city);
+  if (cityAirports.length) {
+    return { candidates: cityAirports, usedRadiusKm: 0 };
+  }
+
+  if (location.lat !== undefined && location.lon !== undefined) {
+    const nearest = airports
+      .map((airport) => ({
+        ...airport,
+        distanceFromOriginKm: haversineDistanceKm(location.lat!, location.lon!, airport.lat, airport.lon),
+      }))
+      .sort((a, b) => (a.distanceFromOriginKm ?? 0) - (b.distanceFromOriginKm ?? 0))[0];
+
+    return { candidates: nearest ? [nearest] : [], usedRadiusKm: 0 };
+  }
+
+  return { candidates: [], usedRadiusKm: 0 };
+};
+
 export const resolveDepartureAirports = (
   request: FlightSearchRequest
 ): { candidates: Airport[]; usedRadiusKm: number } =>
-  resolveNearbyAirports(
-    request.origin,
-    request.preferredDepartureAirports,
-    request.maxDepartureAirportDistanceKm
-  );
+  request.includeNearbyAirports === false
+    ? resolveExactAirports(request.origin)
+    : resolveNearbyAirports(
+        request.origin,
+        request.preferredDepartureAirports,
+        request.maxDepartureAirportDistanceKm
+      );
 
 export const resolveDestinationAirports = (
   request: FlightSearchRequest
 ): { candidates: Airport[]; usedRadiusKm: number } =>
-  resolveNearbyAirports(
-    request.destination,
-    request.preferredArrivalAirports,
-    request.maxArrivalAirportDistanceKm
-  );
+  request.includeNearbyAirports === false
+    ? resolveExactAirports(request.destination)
+    : resolveNearbyAirports(
+        request.destination,
+        request.preferredArrivalAirports,
+        request.maxArrivalAirportDistanceKm
+      );

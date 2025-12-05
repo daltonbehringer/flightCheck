@@ -39,8 +39,29 @@ describe('FlightSearchForm', () => {
     expect(payload.origin.airportCode).toBe('jfk');
     expect(payload.destination.airportCode).toBe('lax');
     expect(payload.returnDate).toBeUndefined();
+    expect(payload.includeNearbyAirports).toBe(true);
     expect(payload.maxDepartureAirportDistanceKm).toBe(NEARBY_AIRPORT_RADIUS_KM);
     expect(payload.maxArrivalAirportDistanceKm).toBe(NEARBY_AIRPORT_RADIUS_KM);
     expect(payload.nonStopOnly).toBe(true);
+  });
+
+  it('limits search to entered airports when nearby toggle is off', async () => {
+    const handleSubmit = jest.fn();
+
+    render(<FlightSearchForm defaultValues={defaultValues} onSubmit={handleSubmit} />);
+
+    fireEvent.change(screen.getByLabelText(/Origin/i), { target: { value: 'jfk' } });
+    fireEvent.change(screen.getByLabelText(/Destination/i), { target: { value: 'lax' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Search flights/i }));
+
+    await waitFor(() => expect(handleSubmit).toHaveBeenCalledTimes(1));
+
+    const payload = handleSubmit.mock.calls[0][0] as FlightSearchRequest;
+    expect(payload.includeNearbyAirports).toBe(false);
+    expect(payload.maxDepartureAirportDistanceKm).toBeUndefined();
+    expect(payload.maxArrivalAirportDistanceKm).toBeUndefined();
+    expect(payload.preferredDepartureAirports).toBeUndefined();
+    expect(payload.preferredArrivalAirports).toBeUndefined();
   });
 });

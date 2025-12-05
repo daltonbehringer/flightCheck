@@ -66,6 +66,7 @@ export interface FlightSearchRequest {
   tripType: TripType;
   departureDate: string;
   returnDate?: string;
+  includeNearbyAirports?: boolean;
   maxDepartureAirportDistanceKm?: number;
   preferredDepartureAirports?: string[];
   maxArrivalAirportDistanceKm?: number;
