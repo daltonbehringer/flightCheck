@@ -6,7 +6,7 @@ export default function SearchPage() {
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-16">
         <header className="text-center">
           <p className="mb-3 inline-flex rounded-full bg-white/60 px-4 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-slate-600 shadow-sm ring-1 ring-slate-200">
-            Cost-first prototype
+            Prototype
           </p>
           <h1 className="text-4xl font-semibold text-ink sm:text-5xl">
             Your multi-airport flight optimizer.

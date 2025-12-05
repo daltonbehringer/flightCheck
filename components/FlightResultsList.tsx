@@ -103,7 +103,7 @@ export default function FlightResultsList({
           </p>
           <p className="text-sm text-slate-600">
             {hasSearched
-              ? 'Try adjusting dates, stops, or nearby airport distance to see more options.'
+              ? 'Try adjusting dates, toggling nearby airports, or relaxing the non-stop filter.'
               : 'Enter your route and preferences to start exploring fares.'}
           </p>
         </div>

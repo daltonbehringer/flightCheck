@@ -1,5 +1,5 @@
 import type { Airport, FlightLeg, FlightSearchRequest, Itinerary } from '@/lib/shared/types/flights';
-import { findAirportsByCodes, resolveDestinationAirports, getAirportDataset } from '@/lib/server/airports/airportService';
+import { findAirportsByCodes, getAirportDataset } from '@/lib/server/airports/airportService';
 import type { DuffelOfferResponse, DuffelSegmentResponse, DuffelSegmentPassenger } from '@/lib/types/duffel';
 
 import type { FlightSearchProvider } from './flightSearchProvider';
@@ -51,19 +51,16 @@ export class DuffelFlightSearchProvider implements FlightSearchProvider {
   }
 
   async searchFlights(
-    request: FlightSearchRequest & { departureAirportCodes: string[] }
+    request: FlightSearchRequest & { departureAirportCodes: string[]; arrivalAirportCodes: string[] }
   ): Promise<Itinerary[]> {
-    const destinationAirports = resolveDestinationAirports(request.destination);
-    const destinationAirport = destinationAirports[0];
-    if (!destinationAirport) return [];
-
     const departures = findAirportsByCodes(request.departureAirportCodes);
-    if (!departures.length) return [];
+    const arrivals = findAirportsByCodes(request.arrivalAirportCodes);
+    if (!departures.length || !arrivals.length) return [];
 
     const airportLookup = this.buildAirportLookup();
 
-    const searches = departures.map((origin) =>
-      this.searchFromOrigin(origin.iata, destinationAirport.iata, request)
+    const searches = departures.flatMap((origin) =>
+      arrivals.map((destination) => this.searchFromOrigin(origin.iata, destination.iata, request))
     );
 
     const offerResults = await Promise.all(searches);

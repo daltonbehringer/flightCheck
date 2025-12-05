@@ -53,14 +53,23 @@ export interface Itinerary {
 
 export type TripType = 'oneway' | 'roundtrip';
 
+export interface FlightSearchLocation {
+  city?: string;
+  airportCode?: string;
+  lat?: number;
+  lon?: number;
+}
+
 export interface FlightSearchRequest {
-  origin: { city?: string; airportCode?: string; lat?: number; lon?: number };
-  destination: { city?: string; airportCode?: string };
+  origin: FlightSearchLocation;
+  destination: FlightSearchLocation;
   tripType: TripType;
   departureDate: string;
   returnDate?: string;
   maxDepartureAirportDistanceKm?: number;
   preferredDepartureAirports?: string[];
+  maxArrivalAirportDistanceKm?: number;
+  preferredArrivalAirports?: string[];
   nonStopOnly?: boolean;
   maxStops?: number;
 }

@@ -16,10 +16,8 @@ const defaultFormValues: FlightSearchFormValues = {
   tripType: 'roundtrip',
   departureDate: formatInputDate(new Date(Date.now() + 1000 * 60 * 60 * 24 * 14)),
   returnDate: formatInputDate(new Date(Date.now() + 1000 * 60 * 60 * 24 * 21)),
-  maxDepartureAirportDistanceKm: 150,
-  preferredDepartureAirports: '',
   nonStopOnly: false,
-  maxStops: 1
+  useNearbyAirports: true
 };
 
 export default function FlightSearchShell() {
@@ -60,8 +58,8 @@ export default function FlightSearchShell() {
   const hasSearched = useMemo(() => status !== 'idle', [status]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.15fr_1.85fr]">
-      <div className="card p-6 lg:sticky lg:top-6 lg:h-fit">
+    <div className="grid gap-6">
+      <div className="card p-6">
         <FlightSearchForm
           defaultValues={defaultFormValues}
           onSubmit={handleSearch}
@@ -69,18 +67,20 @@ export default function FlightSearchShell() {
         />
       </div>
 
-      <div className="card min-h-[520px] p-6">
-        <FlightResultsList
-          itineraries={result?.itineraries ?? []}
-          originAirports={result?.originAirportsConsidered ?? []}
-          destinationAirports={result?.destinationAirportsConsidered ?? []}
-          currency={result?.currency ?? 'USD'}
-          loading={status === 'loading'}
-          error={errorMessage}
-          hasSearched={hasSearched}
-          lastSearch={lastSearch}
-        />
-      </div>
+      {hasSearched && (
+        <div className="card min-h-[520px] p-6">
+          <FlightResultsList
+            itineraries={result?.itineraries ?? []}
+            originAirports={result?.originAirportsConsidered ?? []}
+            destinationAirports={result?.destinationAirportsConsidered ?? []}
+            currency={result?.currency ?? 'USD'}
+            loading={status === 'loading'}
+            error={errorMessage}
+            hasSearched={hasSearched}
+            lastSearch={lastSearch}
+          />
+        </div>
+      )}
     </div>
   );
 }

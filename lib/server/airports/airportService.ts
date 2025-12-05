@@ -1,11 +1,19 @@
 import airportsData from './data/airports.json';
 
-import type { Airport, FlightSearchRequest } from '@/lib/shared/types/flights';
+import type { Airport, FlightSearchLocation, FlightSearchRequest } from '@/lib/shared/types/flights';
 
 const DEFAULT_MAX_DISTANCE_KM = Number(process.env.DEFAULT_AIRPORT_RADIUS_KM ?? 150);
 const EARTH_RADIUS_KM = 6371;
 
-const airports: Airport[] = airportsData;
+const airports: Airport[] = airportsData.map((airport, idx) => ({
+  id: airport.iata ?? `airport-${idx}`,
+  iata: airport.iata,
+  name: airport.name,
+  lat: airport.lat,
+  lon: airport.lon,
+  city: (airport as any).city ?? '',
+  country: (airport as any).country ?? '',
+}));
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
@@ -32,7 +40,11 @@ export const findAirportsByCodes = (codes: string[]): Airport[] => {
 const findAirportsByCity = (city?: string) => {
   if (!city) return [];
   const normalized = city.trim().toLowerCase();
-  return airports.filter((airport) => airport.city.toLowerCase() === normalized);
+  return airports.filter((airport) => {
+    const cityName = airport.city?.toLowerCase();
+    const name = airport.name?.toLowerCase();
+    return cityName === normalized || (name && name.includes(normalized));
+  });
 };
 
 const findAirportByCode = (code?: string) => {
@@ -41,15 +53,15 @@ const findAirportByCode = (code?: string) => {
   return airports.find((airport) => airport.iata.toUpperCase() === normalized);
 };
 
-const resolveReferencePoint = (origin: FlightSearchRequest['origin']): { lat: number; lon: number } | null => {
-  if (origin.lat !== undefined && origin.lon !== undefined) {
-    return { lat: origin.lat, lon: origin.lon };
+const resolveReferencePoint = (location: FlightSearchLocation): { lat: number; lon: number } | null => {
+  if (location.lat !== undefined && location.lon !== undefined) {
+    return { lat: location.lat, lon: location.lon };
   }
 
-  const airport = findAirportByCode(origin.airportCode);
+  const airport = findAirportByCode(location.airportCode);
   if (airport) return { lat: airport.lat, lon: airport.lon };
 
-  const cityAirports = findAirportsByCity(origin.city);
+  const cityAirports = findAirportsByCity(location.city);
   if (cityAirports.length) {
     const avgLat = cityAirports.reduce((sum, airport) => sum + airport.lat, 0) / cityAirports.length;
     const avgLon = cityAirports.reduce((sum, airport) => sum + airport.lon, 0) / cityAirports.length;
@@ -59,32 +71,22 @@ const resolveReferencePoint = (origin: FlightSearchRequest['origin']): { lat: nu
   return null;
 };
 
-export const resolveDestinationAirports = (
-  destination: FlightSearchRequest['destination']
-): Airport[] => {
-  const byCode = destination.airportCode ? findAirportsByCodes([destination.airportCode]) : [];
-  if (byCode.length) return byCode;
-
-  const byCity = destination.city ? findAirportsByCity(destination.city) : [];
-  return byCity;
-};
-
-export const resolveDepartureAirports = (
-  request: FlightSearchRequest
+const resolveNearbyAirports = (
+  location: FlightSearchLocation,
+  preferredAirports?: string[],
+  maxDistanceKm?: number
 ): { candidates: Airport[]; usedRadiusKm: number } => {
-  const preferred = request.preferredDepartureAirports?.length
-    ? findAirportsByCodes(request.preferredDepartureAirports)
-    : [];
+  const preferred = preferredAirports?.length ? findAirportsByCodes(preferredAirports) : [];
 
   if (preferred.length) {
     return { candidates: preferred, usedRadiusKm: 0 };
   }
 
-  const reference = resolveReferencePoint(request.origin);
-  const maxDistance = request.maxDepartureAirportDistanceKm ?? DEFAULT_MAX_DISTANCE_KM;
+  const reference = resolveReferencePoint(location);
+  const maxDistance = maxDistanceKm ?? DEFAULT_MAX_DISTANCE_KM;
 
   if (!reference) {
-    const cityAirports = findAirportsByCity(request.origin.city);
+    const cityAirports = findAirportsByCity(location.city);
     return { candidates: cityAirports, usedRadiusKm: 0 };
   }
 
@@ -103,3 +105,21 @@ export const resolveDepartureAirports = (
 
   return { candidates, usedRadiusKm: maxDistance };
 };
+
+export const resolveDepartureAirports = (
+  request: FlightSearchRequest
+): { candidates: Airport[]; usedRadiusKm: number } =>
+  resolveNearbyAirports(
+    request.origin,
+    request.preferredDepartureAirports,
+    request.maxDepartureAirportDistanceKm
+  );
+
+export const resolveDestinationAirports = (
+  request: FlightSearchRequest
+): { candidates: Airport[]; usedRadiusKm: number } =>
+  resolveNearbyAirports(
+    request.destination,
+    request.preferredArrivalAirports,
+    request.maxArrivalAirportDistanceKm
+  );

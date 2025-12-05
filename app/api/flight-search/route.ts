@@ -29,16 +29,29 @@ const requestSchema = z
     destination: z
       .object({
         city: z.string().optional(),
-        airportCode: z.string().optional()
+        airportCode: z.string().optional(),
+        lat: z.number().optional(),
+        lon: z.number().optional()
       })
-      .refine((value) => Boolean(value.city) || Boolean(value.airportCode), {
-        message: 'Provide city or airportCode for destination.'
-      }),
+      .refine(
+        (value) =>
+          Boolean(value.city) ||
+          Boolean(value.airportCode) ||
+          (value.lat !== undefined && value.lon !== undefined),
+        { message: 'Provide city, airportCode, or lat/lon for destination.' }
+      )
+      .refine(
+        (value) =>
+          (value.lat === undefined && value.lon === undefined) ||
+          (value.lat !== undefined && value.lon !== undefined)
+      ),
     tripType: z.enum(['oneway', 'roundtrip']),
     departureDate: z.string(),
     returnDate: z.string().optional(),
     maxDepartureAirportDistanceKm: z.number().positive().optional(),
     preferredDepartureAirports: z.array(z.string()).optional(),
+    maxArrivalAirportDistanceKm: z.number().positive().optional(),
+    preferredArrivalAirports: z.array(z.string()).optional(),
     nonStopOnly: z.boolean().optional(),
     maxStops: z.number().int().nonnegative().optional()
   })
@@ -64,10 +77,10 @@ export async function POST(request: Request) {
 
   const payload: FlightSearchRequest = parsed.data;
 
-  const destinationAirports = resolveDestinationAirports(payload.destination);
+  const { candidates: destinationAirports } = resolveDestinationAirports(payload);
   if (!destinationAirports.length) {
     return NextResponse.json(
-      { error: 'No destination airports found for the provided destination.' },
+      { error: 'No destination airports found within the configured search area.' },
       { status: 400 }
     );
   }
@@ -84,7 +97,8 @@ export async function POST(request: Request) {
     const provider = getFlightSearchProvider();
     const itineraries = await provider.searchFlights({
       ...payload,
-      departureAirportCodes: originAirports.map((airport) => airport.iata)
+      departureAirportCodes: originAirports.map((airport) => airport.iata),
+      arrivalAirportCodes: destinationAirports.map((airport) => airport.iata)
     });
 
     const ranked = rankItineraries(itineraries);

@@ -8,7 +8,9 @@ import {
 } from '@/lib/server/airports/airportService';
 
 export interface FlightSearchProvider {
-  searchFlights(request: FlightSearchRequest & { departureAirportCodes: string[] }): Promise<Itinerary[]>;
+  searchFlights(
+    request: FlightSearchRequest & { departureAirportCodes: string[]; arrivalAirportCodes: string[] }
+  ): Promise<Itinerary[]>;
 }
 
 const minutesFromDistance = (distanceKm: number) => {
@@ -38,64 +40,59 @@ const pickConnectionAirport = (departureCode: string, destinationCode: string) =
 
 export class MockFlightSearchProvider implements FlightSearchProvider {
   async searchFlights(
-    request: FlightSearchRequest & { departureAirportCodes: string[] }
+    request: FlightSearchRequest & { departureAirportCodes: string[]; arrivalAirportCodes: string[] }
   ): Promise<Itinerary[]> {
-    const destinationAirportCandidates = request.destination.airportCode
-      ? findAirportsByCodes([request.destination.airportCode])
-      : getAirportDataset().filter(
-          (airport) => airport.city.toLowerCase() === (request.destination.city ?? '').toLowerCase()
-        );
-
-    const destinationAirport = destinationAirportCandidates[0];
-    if (!destinationAirport) return [];
-
     const departureAirports = findAirportsByCodes(request.departureAirportCodes);
+    const destinationAirports = findAirportsByCodes(request.arrivalAirportCodes);
     const results: Itinerary[] = [];
 
-    for (let i = 0; i < departureAirports.length; i += 1) {
-      const departureAirport = departureAirports[i];
-      const distanceKm = haversineDistanceKm(
-        departureAirport.lat,
-        departureAirport.lon,
-        destinationAirport.lat,
-        destinationAirport.lon
-      );
+    if (!departureAirports.length || !destinationAirports.length) return results;
 
-      const outboundStart = `${request.departureDate}T08:00:00.000Z`;
-      const primaryAirline = ['UX', 'NX', 'PX'][i % 3];
+    departureAirports.forEach((departureAirport, departureIndex) => {
+      destinationAirports.forEach((destinationAirport) => {
+        const distanceKm = haversineDistanceKm(
+          departureAirport.lat,
+          departureAirport.lon,
+          destinationAirport.lat,
+          destinationAirport.lon
+        );
 
-      const nonstop = this.buildItinerary({
-        departureAirport,
-        destinationAirport,
-        distanceKm,
-        tripType: request.tripType,
-        departureDate: outboundStart,
-        returnDate: request.returnDate,
-        airline: primaryAirline,
-        stops: [],
-        priceMultiplier: 1
-      });
+        const outboundStart = `${request.departureDate}T08:00:00.000Z`;
+        const primaryAirline = ['UX', 'NX', 'PX'][departureIndex % 3];
 
-      results.push(nonstop);
+        const nonstop = this.buildItinerary({
+          departureAirport,
+          destinationAirport,
+          distanceKm,
+          tripType: request.tripType,
+          departureDate: outboundStart,
+          returnDate: request.returnDate,
+          airline: primaryAirline,
+          stops: [],
+          priceMultiplier: 1
+        });
 
-      if (!request.nonStopOnly && (request.maxStops === undefined || request.maxStops >= 1)) {
-        const via = pickConnectionAirport(departureAirport.iata, destinationAirport.iata);
-        if (via) {
-          const oneStop = this.buildItinerary({
-            departureAirport,
-            destinationAirport,
-            distanceKm,
-            tripType: request.tripType,
-            departureDate: outboundStart,
-            returnDate: request.returnDate,
-            airline: primaryAirline,
-            stops: [via.iata],
-            priceMultiplier: 0.85
-          });
-          results.push(oneStop);
+        results.push(nonstop);
+
+        if (!request.nonStopOnly && (request.maxStops === undefined || request.maxStops >= 1)) {
+          const via = pickConnectionAirport(departureAirport.iata, destinationAirport.iata);
+          if (via) {
+            const oneStop = this.buildItinerary({
+              departureAirport,
+              destinationAirport,
+              distanceKm,
+              tripType: request.tripType,
+              departureDate: outboundStart,
+              returnDate: request.returnDate,
+              airline: primaryAirline,
+              stops: [via.iata],
+              priceMultiplier: 0.85
+            });
+            results.push(oneStop);
+          }
         }
-      }
-    }
+      });
+    });
 
     return results.filter((itinerary) => {
       if (request.nonStopOnly) return itinerary.numberOfStops === 0;

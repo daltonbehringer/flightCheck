@@ -30,7 +30,21 @@ describe('airportService', () => {
   });
 
   it('resolves destination by code', () => {
-    const destinations = resolveDestinationAirports({ airportCode: 'CDG' });
-    expect(destinations[0].iata).toBe('CDG');
+    const { candidates } = resolveDestinationAirports({
+      ...baseRequest,
+      destination: { airportCode: 'LAX' }
+    });
+    expect(candidates.map((airport) => airport.iata)).toContain('LAX');
+  });
+
+  it('returns nearby arrival airports by radius when using an anchor airport', () => {
+    const { candidates } = resolveDestinationAirports({
+      ...baseRequest,
+      destination: { airportCode: 'JFK' },
+      maxArrivalAirportDistanceKm: 50
+    });
+
+    const codes = candidates.map((airport) => airport.iata);
+    expect(codes).toEqual(expect.arrayContaining(['JFK', 'LGA']));
   });
 });
