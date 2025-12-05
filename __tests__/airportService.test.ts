@@ -47,4 +47,14 @@ describe('airportService', () => {
     const codes = candidates.map((airport) => airport.iata);
     expect(codes).toEqual(expect.arrayContaining(['JFK', 'LGA']));
   });
+
+  it('returns only the nearest departure airport when nearby search is disabled', () => {
+    const { candidates } = resolveDepartureAirports({
+      ...baseRequest,
+      includeNearbyAirports: false
+    });
+
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].iata).toBe('SFO');
+  });
 });

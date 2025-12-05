@@ -27,22 +27,58 @@ const tripOptions: { label: string; value: TripType }[] = [
   { label: 'One way', value: 'oneway' }
 ];
 
-export const NEARBY_AIRPORT_RADIUS_KM = 150;
+export const NEARBY_AIRPORT_RADIUS_KM = 120;
 
 export default function FlightSearchForm({ defaultValues, onSubmit, loading }: FlightSearchFormProps) {
   const [form, setForm] = useState<FlightSearchFormValues>(defaultValues);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
 
+  const forwardGeocodeCity = async (
+    query: string
+  ): Promise<{ lat: number; lon: number } | null> => {
+    if (!query.trim()) return null;
+    if (process.env.NODE_ENV === 'test') return null;
+
+    try {
+      const response = await fetch(
+        `https://geocode.maps.co/search?q=${encodeURIComponent(query)}&limit=1`
+      );
+      if (!response.ok) return null;
+      const results = (await response.json()) as Array<{ lat?: string; lon?: string }>;
+      const match = results?.[0];
+      if (!match?.lat || !match?.lon) return null;
+      const lat = Number(match.lat);
+      const lon = Number(match.lon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+      return { lat, lon };
+    } catch (error) {
+      console.error('Forward geocoding failed', error);
+      return null;
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    let originLat = form.originLat;
+    let originLon = form.originLon;
+
+    // When nearby is off, try to anchor to the user's city/state by geocoding
+    if (!form.useNearbyAirports && originLat === undefined && originLon === undefined && form.originInput) {
+      const geocoded = await forwardGeocodeCity(form.originInput);
+      if (geocoded) {
+        originLat = geocoded.lat;
+        originLon = geocoded.lon;
+      }
+    }
 
     const payload: FlightSearchRequest = {
       origin: {
         city: form.originInput.trim() || undefined,
         airportCode: form.originInput.trim() || undefined,
-        lat: form.originLat,
-        lon: form.originLon
+        lat: originLat,
+        lon: originLon
       },
       destination: {
         city: form.destinationInput.trim() || undefined,

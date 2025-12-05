@@ -241,7 +241,7 @@ export default function FlightResultsList({
                           </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                          <span className="rounded-full bg-white px-2 py-1">Flight {leg.flightNumber}</span>
+                          {/* <span className="rounded-full bg-white px-2 py-1">Flight {leg.flightNumber}</span> */}
                           {leg.operatingAirlineCode && leg.operatingAirlineCode !== leg.airlineCode && (
                             <span className="rounded-full bg-white px-2 py-1">
                               Operated by {leg.operatingAirlineName ?? leg.operatingAirlineCode}

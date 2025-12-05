@@ -37,13 +37,18 @@ export const findAirportsByCodes = (codes: string[]): Airport[] => {
   return airports.filter((airport) => normalized.includes(airport.iata.toUpperCase()));
 };
 
+const normalizeCityQuery = (city: string) => city.trim().toLowerCase().split(',')[0]?.trim();
+
 const findAirportsByCity = (city?: string) => {
   if (!city) return [];
-  const normalized = city.trim().toLowerCase();
+  const normalized = normalizeCityQuery(city);
   return airports.filter((airport) => {
     const cityName = airport.city?.toLowerCase();
     const name = airport.name?.toLowerCase();
-    return cityName === normalized || (name && name.includes(normalized));
+    const cityMatches =
+      cityName === normalized || (cityName && cityName.includes(normalized));
+    const nameMatches = name && name.includes(normalized);
+    return Boolean(cityMatches || nameMatches);
   });
 };
 
@@ -113,11 +118,6 @@ const resolveExactAirports = (location: FlightSearchLocation): { candidates: Air
     return { candidates: airport ? [airport] : [], usedRadiusKm: 0 };
   }
 
-  const cityAirports = findAirportsByCity(location.city);
-  if (cityAirports.length) {
-    return { candidates: cityAirports, usedRadiusKm: 0 };
-  }
-
   if (location.lat !== undefined && location.lon !== undefined) {
     const nearest = airports
       .map((airport) => ({
@@ -126,6 +126,13 @@ const resolveExactAirports = (location: FlightSearchLocation): { candidates: Air
       }))
       .sort((a, b) => (a.distanceFromOriginKm ?? 0) - (b.distanceFromOriginKm ?? 0))[0];
 
+    return { candidates: nearest ? [nearest] : [], usedRadiusKm: 0 };
+  }
+
+  const cityAirports = findAirportsByCity(location.city);
+  if (cityAirports.length) {
+    // Choose the first when we can't differentiate; use sorted by IATA for deterministic output
+    const nearest = [...cityAirports].sort((a, b) => a.iata.localeCompare(b.iata))[0];
     return { candidates: nearest ? [nearest] : [], usedRadiusKm: 0 };
   }
 
