@@ -1,14 +1,19 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 
+import { searchAirportSuggestions, type AirportSuggestion } from '@/lib/shared/airports/airportSuggestions';
 import type { FlightSearchRequest, TripType } from '@/lib/shared/types/flights';
 
 export interface FlightSearchFormValues {
   originInput: string;
+  originAirportCode?: string;
   originLat?: number;
   originLon?: number;
   destinationInput: string;
+  destinationAirportCode?: string;
+  destinationLat?: number;
+  destinationLon?: number;
   tripType: TripType;
   departureDate: string;
   returnDate?: string;
@@ -29,16 +34,27 @@ const tripOptions: { label: string; value: TripType }[] = [
 
 export const NEARBY_AIRPORT_RADIUS_KM = 120;
 
+const extractIataCode = (value?: string) => {
+  if (!value) return undefined;
+  const match = value.toUpperCase().match(/\b([A-Z]{3})\b/);
+  return match ? match[1] : undefined;
+};
+
 export default function FlightSearchForm({ defaultValues, onSubmit, loading }: FlightSearchFormProps) {
   const [form, setForm] = useState<FlightSearchFormValues>(defaultValues);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [originSuggestions, setOriginSuggestions] = useState<AirportSuggestion[]>([]);
+  const [destinationSuggestions, setDestinationSuggestions] = useState<AirportSuggestion[]>([]);
+  const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
+  const originBlurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const destinationBlurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const forwardGeocodeCity = async (
     query: string
   ): Promise<{ lat: number; lon: number } | null> => {
     if (!query.trim()) return null;
-    if (process.env.NODE_ENV === 'test') return null;
 
     try {
       const response = await fetch(
@@ -58,31 +74,79 @@ export default function FlightSearchForm({ defaultValues, onSubmit, loading }: F
     }
   };
 
+  const ensureCoordinates = async (input: string, lat?: number, lon?: number) => {
+    if (lat !== undefined && lon !== undefined) return { lat, lon };
+    if (!input.trim()) return { lat: undefined, lon: undefined };
+    const geocoded = await forwardGeocodeCity(input);
+    return geocoded ?? { lat: undefined, lon: undefined };
+  };
+
+  const handleSuggestionSelect = (field: 'origin' | 'destination', suggestion: AirportSuggestion) => {
+    if (field === 'origin') {
+      setForm((prev) => ({
+        ...prev,
+        originInput: suggestion.label,
+        originAirportCode: suggestion.iata,
+        originLat: suggestion.lat,
+        originLon: suggestion.lon
+      }));
+      setShowOriginSuggestions(false);
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        destinationInput: suggestion.label,
+        destinationAirportCode: suggestion.iata,
+        destinationLat: suggestion.lat,
+        destinationLon: suggestion.lon
+      }));
+      setShowDestinationSuggestions(false);
+    }
+  };
+
+  const updateSuggestions = (field: 'origin' | 'destination', value: string) => {
+    const results = searchAirportSuggestions(value);
+    if (field === 'origin') {
+      setOriginSuggestions(results);
+      setShowOriginSuggestions(results.length > 0);
+    } else {
+      setDestinationSuggestions(results);
+      setShowDestinationSuggestions(results.length > 0);
+    }
+  };
+
+  const handleBlurWithDelay = (field: 'origin' | 'destination') => {
+    const ref = field === 'origin' ? originBlurTimeout : destinationBlurTimeout;
+    const setter = field === 'origin' ? setShowOriginSuggestions : setShowDestinationSuggestions;
+    if (ref.current) clearTimeout(ref.current);
+    ref.current = setTimeout(() => setter(false), 120);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    let originLat = form.originLat;
-    let originLon = form.originLon;
+    const originCoords = await ensureCoordinates(form.originInput, form.originLat, form.originLon);
+    const destinationCoords = await ensureCoordinates(
+      form.destinationInput,
+      form.destinationLat,
+      form.destinationLon
+    );
 
-    // When nearby is off, try to anchor to the user's city/state by geocoding
-    if (!form.useNearbyAirports && originLat === undefined && originLon === undefined && form.originInput) {
-      const geocoded = await forwardGeocodeCity(form.originInput);
-      if (geocoded) {
-        originLat = geocoded.lat;
-        originLon = geocoded.lon;
-      }
-    }
+    const originAirportCode = form.originAirportCode ?? extractIataCode(form.originInput);
+    const destinationAirportCode =
+      form.destinationAirportCode ?? extractIataCode(form.destinationInput);
 
     const payload: FlightSearchRequest = {
       origin: {
         city: form.originInput.trim() || undefined,
-        airportCode: form.originInput.trim() || undefined,
-        lat: originLat,
-        lon: originLon
+        airportCode: originAirportCode,
+        lat: originCoords.lat,
+        lon: originCoords.lon
       },
       destination: {
         city: form.destinationInput.trim() || undefined,
-        airportCode: form.destinationInput.trim() || undefined
+        airportCode: destinationAirportCode,
+        lat: destinationCoords.lat,
+        lon: destinationCoords.lon
       },
       tripType: form.tripType,
       departureDate: form.departureDate,
@@ -133,9 +197,12 @@ export default function FlightSearchForm({ defaultValues, onSubmit, loading }: F
         setForm((prev) => ({
           ...prev,
           originInput: resolvedLabel || 'Current location',
+          originAirportCode: undefined,
           originLat: latitude,
           originLon: longitude
         }));
+        setOriginSuggestions([]);
+        setShowOriginSuggestions(false);
         setLocating(false);
       },
       () => {
@@ -184,15 +251,22 @@ export default function FlightSearchForm({ defaultValues, onSubmit, loading }: F
                 required
                 name="origin"
                 value={form.originInput}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const value = e.target.value;
                   setForm((prev) => ({
                     ...prev,
-                    originInput: e.target.value,
+                    originInput: value,
                     originLat: undefined,
-                    originLon: undefined
-                  }))
-                }
+                    originLon: undefined,
+                    originAirportCode: undefined
+                  }));
+                  updateSuggestions('origin', value);
+                }}
+                onFocus={() => updateSuggestions('origin', form.originInput)}
+                onBlur={() => handleBlurWithDelay('origin')}
                 placeholder="SFO"
+                aria-autocomplete="list"
+                aria-expanded={showOriginSuggestions}
                 className="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 pr-12 text-slate-900 shadow-inner focus:border-accent focus:ring-2 focus:ring-accent/30"
               />
               <button
@@ -215,6 +289,15 @@ export default function FlightSearchForm({ defaultValues, onSubmit, loading }: F
                   </svg>
                 )}
               </button>
+              {showOriginSuggestions && originSuggestions.length > 0 && (
+                <SuggestionList
+                  suggestions={originSuggestions}
+                  onSelect={(suggestion) => handleSuggestionSelect('origin', suggestion)}
+                  onMouseDown={() => {
+                    if (originBlurTimeout.current) clearTimeout(originBlurTimeout.current);
+                  }}
+                />
+              )}
             </div>
             {locationError && <p className="text-xs text-red-600">{locationError}</p>}
           </label>
@@ -225,15 +308,33 @@ export default function FlightSearchForm({ defaultValues, onSubmit, loading }: F
               required
               name="destination"
               value={form.destinationInput}
-              onChange={(e) =>
+              onChange={(e) => {
+                const value = e.target.value;
                 setForm((prev) => ({
                   ...prev,
-                  destinationInput: e.target.value
-                }))
-              }
+                  destinationInput: value,
+                  destinationLat: undefined,
+                  destinationLon: undefined,
+                  destinationAirportCode: undefined
+                }));
+                updateSuggestions('destination', value);
+              }}
+              onFocus={() => updateSuggestions('destination', form.destinationInput)}
+              onBlur={() => handleBlurWithDelay('destination')}
               placeholder="DFW"
-              className="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 shadow-inner focus:border-accent focus:ring-2 focus:ring-accent/30"
+              aria-autocomplete="list"
+              aria-expanded={showDestinationSuggestions}
+              className="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 pr-12 text-slate-900 shadow-inner focus:border-accent focus:ring-2 focus:ring-accent/30"
             />
+            {showDestinationSuggestions && destinationSuggestions.length > 0 && (
+              <SuggestionList
+                suggestions={destinationSuggestions}
+                onSelect={(suggestion) => handleSuggestionSelect('destination', suggestion)}
+                onMouseDown={() => {
+                  if (destinationBlurTimeout.current) clearTimeout(destinationBlurTimeout.current);
+                }}
+              />
+            )}
           </label>
 
           <label className="flex-1 space-y-2 text-sm font-medium text-slate-700">
@@ -309,5 +410,50 @@ export default function FlightSearchForm({ defaultValues, onSubmit, loading }: F
         Prices shown are flight costs only; ground transport will be added in a later iteration.
       </p>
     </form>
+  );
+}
+
+function SuggestionList({
+  suggestions,
+  onSelect,
+  onMouseDown
+}: {
+  suggestions: AirportSuggestion[];
+  onSelect: (suggestion: AirportSuggestion) => void;
+  onMouseDown?: () => void;
+}) {
+  return (
+    <ul
+      role="listbox"
+      onMouseDown={onMouseDown}
+      className="absolute left-0 right-0 z-20 mt-2 max-h-64 overflow-auto rounded-lg border border-slate-200 bg-white shadow-lg ring-1 ring-black/5"
+    >
+      {suggestions.map((suggestion) => (
+        <li key={suggestion.iata}>
+          <button
+            type="button"
+            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left transition hover:bg-slate-50"
+            onClick={() => onSelect(suggestion)}
+          >
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-ink">{suggestion.label}</span>
+              <span className="text-xs text-slate-500">
+                {suggestion.description ?? 'Airport'}
+              </span>
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <span className="rounded bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                {suggestion.iata}
+              </span>
+              {suggestion.badge && (
+                <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-accent">
+                  {suggestion.badge}
+                </span>
+              )}
+            </div>
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
