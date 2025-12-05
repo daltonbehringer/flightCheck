@@ -64,4 +64,29 @@ describe('FlightSearchForm', () => {
     expect(payload.preferredDepartureAirports).toBeUndefined();
     expect(payload.preferredArrivalAirports).toBeUndefined();
   });
+
+  it('passes through current location coordinates when nearby search is disabled', async () => {
+    const handleSubmit = jest.fn();
+
+    render(
+      <FlightSearchForm
+        defaultValues={{
+          ...defaultValues,
+          originInput: 'Current location',
+          originLat: 30.2672,
+          originLon: -97.7431
+        }}
+        onSubmit={handleSubmit}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Search flights/i }));
+
+    await waitFor(() => expect(handleSubmit).toHaveBeenCalledTimes(1));
+
+    const payload = handleSubmit.mock.calls[0][0] as FlightSearchRequest;
+    expect(payload.origin.lat).toBeCloseTo(30.2672);
+    expect(payload.origin.lon).toBeCloseTo(-97.7431);
+    expect(payload.includeNearbyAirports).toBe(false);
+  });
 });

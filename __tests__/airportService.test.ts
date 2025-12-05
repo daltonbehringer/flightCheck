@@ -57,4 +57,20 @@ describe('airportService', () => {
     expect(candidates).toHaveLength(1);
     expect(candidates[0].iata).toBe('SFO');
   });
+
+  it('falls back to coordinates when airport code text is unrecognized and nearby search is disabled', () => {
+    const { candidates } = resolveDepartureAirports({
+      ...baseRequest,
+      origin: {
+        city: 'Austin, TX',
+        airportCode: 'Austin, TX',
+        lat: 30.2672,
+        lon: -97.7431
+      },
+      includeNearbyAirports: false
+    });
+
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].iata).toBe('AUS');
+  });
 });
