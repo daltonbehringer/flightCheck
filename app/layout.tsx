@@ -10,8 +10,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'Duffel Flight Search',
-  description: 'Modern flight search experience powered by the Duffel API.'
+  title: 'FlyNext',
+  description: 'Modern flight search experience.'
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -112,12 +112,7 @@ const resolveNearbyAirports = (
 };
 
 const resolveExactAirports = (location: FlightSearchLocation): { candidates: Airport[]; usedRadiusKm: number } => {
-  const code = location.airportCode?.trim().toUpperCase();
-  if (code) {
-    const airport = findAirportByCode(code);
-    return { candidates: airport ? [airport] : [], usedRadiusKm: 0 };
-  }
-
+  // If coordinates are present, choose the nearest airport to that point (covers "current location" flows)
   if (location.lat !== undefined && location.lon !== undefined) {
     const nearest = airports
       .map((airport) => ({
@@ -127,6 +122,12 @@ const resolveExactAirports = (location: FlightSearchLocation): { candidates: Air
       .sort((a, b) => (a.distanceFromOriginKm ?? 0) - (b.distanceFromOriginKm ?? 0))[0];
 
     return { candidates: nearest ? [nearest] : [], usedRadiusKm: 0 };
+  }
+
+  const code = location.airportCode?.trim().toUpperCase();
+  if (code) {
+    const airport = findAirportByCode(code);
+    return { candidates: airport ? [airport] : [], usedRadiusKm: 0 };
   }
 
   const cityAirports = findAirportsByCity(location.city);
